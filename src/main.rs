@@ -1,10 +1,11 @@
-use rayon::prelude::*;
-use std::fs::File;
-use std::io::prelude::*;
+use rayon::prelude::*; // For parallelization
+use std::fs::File; // For writing to a file
+use std::io::prelude::*; // For writing to a file
 
 mod math;
 mod primitive;
 
+// Materials
 const IVORY: primitive::Material = primitive::Material::new(
     1.0,
     [0.9, 0.5, 0.1, 0.0],
@@ -33,6 +34,7 @@ const MIRROR: primitive::Material = primitive::Material::new(
     1425.0,
 );
 
+// Spheres in the scene
 const SPHERES: [primitive::Sphere; 4] = [
     primitive::Sphere::new(math::Vec3::new(-3.0, 0.0, -16.0), 2.0, IVORY),
     primitive::Sphere::new(math::Vec3::new(-1.0, -1.5, -12.0), 2.0, GLASS),
@@ -40,6 +42,7 @@ const SPHERES: [primitive::Sphere; 4] = [
     primitive::Sphere::new(math::Vec3::new(7.0, 5.0, -18.0), 4.0, MIRROR),
 ];
 
+// Lights in the scene
 const LIGHTS: [math::Vec3; 3] = [
     math::Vec3::new(-20.0, 20.0, 20.0),
     math::Vec3::new(30.0, 50.0, -25.0),
@@ -50,10 +53,12 @@ const BACKGROUND_COLOR: math::Vec3 = math::Vec3::new(0.1955, 0.9377, 0.6533);
 const BOX_COLOR1: math::Vec3 = math::Vec3::new(0.9822, 0.6044, 0.1733);
 const BOX_COLOR2: math::Vec3 = math::Vec3::new(0.9822, 0.2, 0.1733);
 
+// reflection of an incident vector i around a normal n
 fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
     *i - *n * 2.0 * (*i * *n)
 }
 
+// refraction of an incident vector i around a normal n with refractive indices eta_t and eta_i
 fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Vec3 {
     let cosi: f64 = -((*i * *n).clamp(-1.0, 1.0));
 
@@ -70,6 +75,7 @@ fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Ve
     };
 }
 
+// intersection of a ray with a sphere
 fn ray_sphere_intersect(
     orig: &math::Vec3,
     dir: &math::Vec3,
@@ -97,6 +103,7 @@ fn ray_sphere_intersect(
     return (false, 0.0);
 }
 
+// intersection of a ray with the scene
 fn scene_intersect(
     orig: &math::Vec3,
     dir: &math::Vec3,
@@ -118,10 +125,8 @@ fn scene_intersect(
             material.diffuse_color =
                 if ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
                     BOX_COLOR1
-                    // math::Vec3::new(0.3, 0.3, 0.3)
                 } else {
                     BOX_COLOR2
-                    // math::Vec3::new(0.3, 0.2, 0.1)
                 };
         }
     }
@@ -140,10 +145,11 @@ fn scene_intersect(
     return (nearest_dist < 1000.0, pt, n, material);
 }
 
+// cast a ray and return the color of the closest object
 fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
     let (hit, point, n, material): (bool, math::Vec3, math::Vec3, primitive::Material) =
         scene_intersect(orig, dir);
-    if depth > 4 || !hit {
+    if depth > 5 || !hit {
         return BACKGROUND_COLOR;
     }
 
@@ -186,6 +192,8 @@ fn main() {
 
     let dir_z: f64 = -(HEIGHT as f64) / (2.0 * (FOV / 2.0).tan());
 
+    println!("Rendering...");
+
     framebuffer
         .par_iter_mut()
         .enumerate()
@@ -196,6 +204,8 @@ fn main() {
 
             *pixel = cast_ray(&math::Vec3::void(), &dir, 0);
         });
+
+    println!("Writing to file...");
 
     let mut file = File::create("out.ppm").unwrap();
     file.write_all(format!("P6\n{} {}\n255\n", WIDTH, HEIGHT).as_bytes())

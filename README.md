@@ -1,7 +1,5 @@
 # tinyraytracer-Rust
 
-![GitHub license](https://img.shields.io/github/license/Qazalbash/tinyraytracer-Rust)
-
 It is inspired from [tinyraytracer](https://github.com/ssloy/tinyraytracer) by [ssloy](https://github.com/ssloy) which is written in C++. This is a Rust version of it. It is a very good tutorial for beginners to learn ray tracing. I have tried to keep the code as close to the original as possible.
 
 ![Result](out.png)

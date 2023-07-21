@@ -2,56 +2,16 @@ use rayon::prelude::*; // For parallelization
 use std::fs::File; // For writing to a file
 use std::io::prelude::*; // For writing to a file
 
+mod constants;
 mod math;
 mod primitive;
 
-// Materials
-const IVORY: primitive::Material = primitive::Material::new(
-    1.0,
-    [0.9, 0.5, 0.1, 0.0],
-    math::Vec3::new(0.4, 0.4, 0.3),
-    50.0,
-);
+use rand::Rng;
 
-const GLASS: primitive::Material = primitive::Material::new(
-    1.5,
-    [0.0, 0.9, 0.1, 0.8],
-    math::Vec3::new(0.6, 0.7, 0.8),
-    125.0,
-);
-
-const RED_RUBBER: primitive::Material = primitive::Material::new(
-    1.0,
-    [1.4, 0.3, 0.0, 0.0],
-    math::Vec3::new(0.3, 0.1, 0.1),
-    10.0,
-);
-
-const MIRROR: primitive::Material = primitive::Material::new(
-    1.0,
-    [0.0, 16.0, 0.8, 0.0],
-    math::Vec3::new(1.0, 1.0, 1.0),
-    1425.0,
-);
-
-// Spheres in the scene
-const SPHERES: [primitive::Sphere; 4] = [
-    primitive::Sphere::new(math::Vec3::new(-3.0, 0.0, -16.0), 2.0, IVORY),
-    primitive::Sphere::new(math::Vec3::new(-1.0, -1.5, -12.0), 2.0, GLASS),
-    primitive::Sphere::new(math::Vec3::new(1.5, -0.5, -18.0), 3.0, RED_RUBBER),
-    primitive::Sphere::new(math::Vec3::new(7.0, 5.0, -18.0), 4.0, MIRROR),
-];
-
-// Lights in the scene
-const LIGHTS: [math::Vec3; 3] = [
-    math::Vec3::new(-20.0, 20.0, 20.0),
-    math::Vec3::new(30.0, 50.0, -25.0),
-    math::Vec3::new(30.0, 20.0, 30.0),
-];
-
-const BACKGROUND_COLOR: math::Vec3 = math::Vec3::new(0.1955, 0.9377, 0.6533);
-const BOX_COLOR1: math::Vec3 = math::Vec3::new(0.9822, 0.6044, 0.1733);
-const BOX_COLOR2: math::Vec3 = math::Vec3::new(0.9822, 0.2, 0.1733);
+fn random_f64() -> f64 {
+    let mut rng = rand::thread_rng();
+    rng.gen::<f64>()
+}
 
 // reflection of an incident vector i around a normal n
 fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
@@ -91,12 +51,13 @@ fn ray_sphere_intersect(
     }
 
     let thc: f64 = (radius_sq - d2).sqrt();
-    let t0: f64 = tca - thc;
-    let t1: f64 = tca + thc;
 
+    let t0: f64 = tca - thc;
     if t0 > 0.001 {
         return (true, t0);
     }
+
+    let t1: f64 = tca + thc;
     if t1 > 0.001 {
         return (true, t1);
     }
@@ -111,12 +72,11 @@ fn scene_intersect(
     let mut pt: math::Vec3 = math::Vec3::void();
     let mut n: math::Vec3 = math::Vec3::void();
     let mut material: primitive::Material = primitive::Material::void();
-
     let mut nearest_dist: f64 = std::f64::MAX;
 
     if dir.y.abs() > 0.001 {
-        let d = -(orig.y + 4.0) / dir.y;
-        let p = *orig + *dir * d;
+        let d: f64 = -(orig.y + 4.0) / dir.y;
+        let p: math::Vec3 = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && p.x.abs() < 10.0 && p.z < -10.0 && p.z > -30.0 {
             nearest_dist = d;
@@ -124,14 +84,14 @@ fn scene_intersect(
             n = math::Vec3::new(0.0, 1.0, 0.0);
             material.diffuse_color =
                 if ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
-                    BOX_COLOR1
+                    constants::BOX_COLOR1
                 } else {
-                    BOX_COLOR2
+                    constants::BOX_COLOR2
                 };
         }
     }
 
-    for sphere in &SPHERES {
+    for sphere in &constants::SPHERES {
         let (intersection, d): (bool, f64) = ray_sphere_intersect(orig, dir, &sphere);
         if !intersection || d > nearest_dist {
             continue;
@@ -150,7 +110,7 @@ fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
     let (hit, point, n, material): (bool, math::Vec3, math::Vec3, primitive::Material) =
         scene_intersect(orig, dir);
     if depth > 5 || !hit {
-        return BACKGROUND_COLOR;
+        return constants::BACKGROUND_COLOR;
     }
 
     let reflect_dir: math::Vec3 = reflect(dir, &n).normalized();
@@ -161,7 +121,7 @@ fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
     let mut diffuse_light_intensity: f64 = 0.0;
     let mut specular_light_intensity: f64 = 0.0;
 
-    for light in &LIGHTS {
+    for light in &constants::LIGHTS {
         let light_dir: math::Vec3 = (*light - point).normalized();
 
         let (hit, shadow_pt, _, _): (bool, math::Vec3, math::Vec3, primitive::Material) =
@@ -198,8 +158,8 @@ fn main() {
         .par_iter_mut()
         .enumerate()
         .for_each(|(pix, pixel)| {
-            let dir_x: f64 = ((pix % WIDTH) as f64 + 0.5) - (WIDTH as f64 / 2.0);
-            let dir_y: f64 = -((pix / WIDTH) as f64 + 0.5) + (HEIGHT as f64 / 2.0);
+            let dir_x: f64 = ((pix % WIDTH) as f64 + random_f64() / 2.0) - (WIDTH as f64 / 2.0);
+            let dir_y: f64 = -((pix / WIDTH) as f64 + random_f64() / 2.0) + (HEIGHT as f64 / 2.0);
             let dir: math::Vec3 = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
 
             *pixel = cast_ray(&math::Vec3::void(), &dir, 0);

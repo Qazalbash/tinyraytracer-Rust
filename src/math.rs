@@ -19,14 +19,14 @@ impl Add for Vec3 {
     }
 }
 
-impl Div for Vec3 {
+impl Div<f64> for Vec3 {
     type Output = Self;
 
-    fn div(self, other: Self) -> Self {
+    fn div(self, other: f64) -> Self {
         Self {
-            x: self.x / other.x,
-            y: self.y / other.y,
-            z: self.z / other.z,
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
         }
     }
 }

@@ -74,20 +74,69 @@ fn scene_intersect(
     let mut material: primitive::Material = primitive::Material::void();
     let mut nearest_dist: f64 = std::f64::MAX;
 
+    if dir.x.abs() > 0.001 {
+        let mut d: f64 = -(orig.x + 10.0) / dir.x;
+        let mut p: math::Vec3 = *orig + *dir * d;
+
+        if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
+            nearest_dist = d;
+            pt = p;
+            n = math::Vec3::new(1.0, 0.0, 0.0);
+            material.diffuse_color =
+                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
+                    true => constants::BOX_COLOR1,
+                    false => constants::BOX_COLOR2,
+                };
+            material.diffuse_color = material.diffuse_color * 0.3;
+        }
+
+        d = -(orig.x - 12.0) / dir.x;
+        p = *orig + *dir * d;
+
+        if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
+            nearest_dist = d;
+            pt = p;
+            n = math::Vec3::new(-1.0, 0.0, 0.0);
+            material.diffuse_color =
+                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
+                    true => constants::BOX_COLOR1,
+                    false => constants::BOX_COLOR2,
+                };
+            material.diffuse_color = material.diffuse_color * 0.3;
+        }
+    }
+
     if dir.y.abs() > 0.001 {
         let d: f64 = -(orig.y + 4.0) / dir.y;
         let p: math::Vec3 = *orig + *dir * d;
 
-        if d > 0.001 && d < nearest_dist && p.x.abs() < 10.0 && p.z < -10.0 && p.z > -30.0 {
+        if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && (p.z + 12.0).abs() < 10.0 {
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 1.0, 0.0);
             material.diffuse_color =
-                if ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
-                    constants::BOX_COLOR1
-                } else {
-                    constants::BOX_COLOR2
+                match ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
+                    true => constants::BOX_COLOR1,
+                    false => constants::BOX_COLOR2,
                 };
+            material.diffuse_color = material.diffuse_color * 0.3;
+        }
+    }
+
+    if dir.z.abs() > 0.001 {
+        let d: f64 = -(orig.z + 22.0) / dir.z;
+        let p: math::Vec3 = *orig + *dir * d;
+
+        if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && p.y.abs() < 4.0 {
+            nearest_dist = d;
+            pt = p;
+            n = math::Vec3::new(0.0, 0.0, 1.0);
+            material.diffuse_color =
+                match ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.y) as i32) & 1 == 1 {
+                    true => constants::BOX_COLOR1,
+                    false => constants::BOX_COLOR2,
+                };
+            material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
 

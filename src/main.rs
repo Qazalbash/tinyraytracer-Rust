@@ -1,6 +1,6 @@
 use rayon::prelude::*; // For parallelization
-use std::fs::File; // For writing to a file
-use std::io::prelude::*; // For writing to a file
+use std::fs::File;
+use std::io::{BufWriter, Write};
 
 mod constants;
 mod math;
@@ -75,11 +75,10 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(1.0, 0.0, 0.0);
-            material.diffuse_color =
-                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
-                    true => constants::BOX_COLOR1,
-                    false => constants::BOX_COLOR2,
-                };
+            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
+                true => constants::BOX_COLOR1,
+                false => constants::BOX_COLOR2,
+            };
             material.diffuse_color = material.diffuse_color * 0.3;
         }
 
@@ -90,11 +89,10 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(-1.0, 0.0, 0.0);
-            material.diffuse_color =
-                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
-                    true => constants::BOX_COLOR1,
-                    false => constants::BOX_COLOR2,
-                };
+            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
+                true => constants::BOX_COLOR1,
+                false => constants::BOX_COLOR2,
+            };
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -107,11 +105,10 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 1.0, 0.0);
-            material.diffuse_color =
-                match ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.z) as i32) & 1 == 1 {
-                    true => constants::BOX_COLOR1,
-                    false => constants::BOX_COLOR2,
-                };
+            material.diffuse_color = match ((pt.x + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
+                true => constants::BOX_COLOR1,
+                false => constants::BOX_COLOR2,
+            };
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -124,11 +121,10 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 0.0, 1.0);
-            material.diffuse_color =
-                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.x) as i32) & 1 == 1 {
-                    true => constants::BOX_COLOR1,
-                    false => constants::BOX_COLOR2,
-                };
+            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.x as i32) & 1 == 1 {
+                true => constants::BOX_COLOR1,
+                false => constants::BOX_COLOR2,
+            };
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -209,7 +205,7 @@ fn main() {
 
     println!("Writing to file...");
 
-    let mut file = File::create("out.ppm").unwrap();
+    let mut file = BufWriter::new(File::create("out.ppm").unwrap());
     file.write_all(format!("P6\n{} {}\n255\n", WIDTH, HEIGHT).as_bytes())
         .unwrap();
     for color in &framebuffer {
@@ -218,6 +214,8 @@ fn main() {
             file.write_all(&[(channel * scale) as u8]).unwrap();
         }
     }
+
+    file.flush().unwrap();
 
     println!("Done!");
 }

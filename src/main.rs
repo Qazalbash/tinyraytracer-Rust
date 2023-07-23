@@ -6,13 +6,6 @@ mod constants;
 mod math;
 mod primitive;
 
-use rand::Rng;
-
-fn random_f64() -> f64 {
-    let mut rng = rand::thread_rng();
-    rng.gen::<f64>()
-}
-
 // reflection of an incident vector i around a normal n
 fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
     *i - *n * 2.0 * (*i * *n)
@@ -75,7 +68,7 @@ fn scene_intersect(
     let mut nearest_dist: f64 = std::f64::MAX;
 
     if dir.x.abs() > 0.001 {
-        let mut d: f64 = -(orig.x + 10.0) / dir.x;
+        let mut d: f64 = -(orig.x + 12.0) / dir.x;
         let mut p: math::Vec3 = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
@@ -132,7 +125,7 @@ fn scene_intersect(
             pt = p;
             n = math::Vec3::new(0.0, 0.0, 1.0);
             material.diffuse_color =
-                match ((0.5 * pt.x + 1000.0) as i32 + (0.5 * pt.y) as i32) & 1 == 1 {
+                match ((0.5 * pt.y + 1000.0) as i32 + (0.5 * pt.x) as i32) & 1 == 1 {
                     true => constants::BOX_COLOR1,
                     false => constants::BOX_COLOR2,
                 };
@@ -193,8 +186,8 @@ fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
 }
 
 fn main() {
-    const WIDTH: usize = 1024;
-    const HEIGHT: usize = 768;
+    const WIDTH: usize = 1920;
+    const HEIGHT: usize = 1080;
     const FOV: f64 = 1.05;
 
     let mut framebuffer: Vec<math::Vec3> = vec![math::Vec3::void(); WIDTH * HEIGHT];
@@ -207,11 +200,11 @@ fn main() {
         .par_iter_mut()
         .enumerate()
         .for_each(|(pix, pixel)| {
-            let dir_x: f64 = ((pix % WIDTH) as f64 + random_f64() / 2.0) - (WIDTH as f64 / 2.0);
-            let dir_y: f64 = -((pix / WIDTH) as f64 + random_f64() / 2.0) + (HEIGHT as f64 / 2.0);
+            let dir_x: f64 = ((pix % WIDTH) as f64 + 0.5) - (WIDTH as f64 / 2.0);
+            let dir_y: f64 = -((pix / WIDTH) as f64 + 0.5) + (HEIGHT as f64 / 2.0);
             let dir: math::Vec3 = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
 
-            *pixel = cast_ray(&math::Vec3::void(), &dir, 0);
+            *pixel = cast_ray(&math::Vec3::new(0.0, 0.0, 10.0), &dir, 0);
         });
 
     println!("Writing to file...");

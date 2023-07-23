@@ -54,6 +54,6 @@ pub(crate) const LIGHTS: [math::Vec3; 4] = [
     math::Vec3::new(-30.0, 20.0, -30.0),
 ];
 
-pub(crate) const BACKGROUND_COLOR: math::Vec3 = math::Vec3::new(0.1955, 0.9377, 0.6533);
-pub(crate) const BOX_COLOR1: math::Vec3 = math::Vec3::new(0.9822, 0.6044, 0.1733);
-pub(crate) const BOX_COLOR2: math::Vec3 = math::Vec3::new(0.9822, 0.2, 0.1733);
+pub(crate) const BACKGROUND_COLOR: math::Vec3 = math::Vec3::new(0.5, 0.3, 1.0);
+pub(crate) const BOX_COLOR1: math::Vec3 = math::Vec3::new(1.0, 0.0, 0.5);
+pub(crate) const BOX_COLOR2: math::Vec3 = math::Vec3::new(1.0, 1.0, 0.3);

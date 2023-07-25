@@ -1,17 +1,25 @@
-use rayon::prelude::*; // For parallelization
+use rayon::prelude::*;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::{BufWriter, Write}; // For parallelization
 
 mod constants;
 mod math;
 mod primitive;
 
-// reflection of an incident vector i around a normal n
+/// A pattern function that returns a color based on the position of a point in space
+fn pattern(a: f64, b: f64) -> math::Vec3 {
+    match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
+        true => constants::DARK_SQUARE,
+        false => constants::LIGHT_SQUARE,
+    }
+}
+
+/// Reflect an incident vector i around a normal n
 fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
     *i - *n * 2.0 * (*i * *n)
 }
 
-// refraction of an incident vector i around a normal n with refractive indices eta_t and eta_i
+/// Refract an incident vector i around a normal n
 fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Vec3 {
     let cosi: f64 = -((*i * *n).clamp(-1.0, 1.0));
 
@@ -28,7 +36,7 @@ fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Ve
     };
 }
 
-// intersection of a ray with a sphere
+/// Intersection of a ray with a sphere
 fn ray_sphere_intersect(
     orig: &math::Vec3,
     dir: &math::Vec3,
@@ -57,7 +65,7 @@ fn ray_sphere_intersect(
     return (false, 0.0);
 }
 
-// intersection of a ray with the scene
+/// Intersection of a ray with the scene
 fn scene_intersect(
     orig: &math::Vec3,
     dir: &math::Vec3,
@@ -75,10 +83,7 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(1.0, 0.0, 0.0);
-            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
-                true => constants::BOX_COLOR1,
-                false => constants::BOX_COLOR2,
-            };
+            material.diffuse_color = pattern(pt.y, pt.z);
             material.diffuse_color = material.diffuse_color * 0.3;
         }
 
@@ -89,10 +94,7 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(-1.0, 0.0, 0.0);
-            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
-                true => constants::BOX_COLOR1,
-                false => constants::BOX_COLOR2,
-            };
+            material.diffuse_color = pattern(pt.y, pt.z);
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -105,10 +107,7 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 1.0, 0.0);
-            material.diffuse_color = match ((pt.x + 1000.0) as i32 + pt.z as i32) & 1 == 1 {
-                true => constants::BOX_COLOR1,
-                false => constants::BOX_COLOR2,
-            };
+            material.diffuse_color = pattern(pt.x, pt.z);
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -121,10 +120,7 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 0.0, 1.0);
-            material.diffuse_color = match ((pt.y + 1000.0) as i32 + pt.x as i32) & 1 == 1 {
-                true => constants::BOX_COLOR1,
-                false => constants::BOX_COLOR2,
-            };
+            material.diffuse_color = pattern(pt.y, pt.x);
             material.diffuse_color = material.diffuse_color * 0.3;
         }
     }
@@ -143,11 +139,11 @@ fn scene_intersect(
     return (nearest_dist < 1000.0, pt, n, material);
 }
 
-// cast a ray and return the color of the closest object
+/// Cast a ray into the scene
 fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
     let (hit, point, n, material): (bool, math::Vec3, math::Vec3, primitive::Material) =
         scene_intersect(orig, dir);
-    if depth > 5 || !hit {
+    if depth > constants::DEPTH || !hit {
         return constants::BACKGROUND_COLOR;
     }
 
@@ -181,6 +177,7 @@ fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
         + (refract_color * material.albedo[3])
 }
 
+/// Main function
 fn main() {
     const WIDTH: usize = 1920;
     const HEIGHT: usize = 1080;
@@ -200,7 +197,7 @@ fn main() {
             let dir_y: f64 = -((pix / WIDTH) as f64 + 0.5) + (HEIGHT as f64 / 2.0);
             let dir: math::Vec3 = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
 
-            *pixel = cast_ray(&math::Vec3::new(0.0, 0.0, 10.0), &dir, 0);
+            *pixel = cast_ray(&constants::CAMERA_POSITION, &dir, 0);
         });
 
     println!("Writing to file...");

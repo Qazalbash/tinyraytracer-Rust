@@ -6,15 +6,8 @@ mod constants;
 mod math;
 mod primitive;
 
-/// A pattern function that returns a color based on the position of a point in space
-fn pattern(a: f64, b: f64) -> math::Vec3 {
-    match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
-        true => constants::DARK_SQUARE,
-        false => constants::LIGHT_SQUARE,
-    }
-}
-
 /// Reflect an incident vector i around a normal n
+#[inline]
 fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
     *i - *n * 2.0 * (*i * *n)
 }
@@ -63,6 +56,15 @@ fn ray_sphere_intersect(
         return (true, t1);
     }
     return (false, 0.0);
+}
+
+/// A pattern function that returns a color based on the position of a point in space
+#[inline]
+fn pattern(a: f64, b: f64) -> math::Vec3 {
+    match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
+        true => constants::DARK_SQUARE,
+        false => constants::LIGHT_SQUARE,
+    }
 }
 
 /// Intersection of a ray with the scene

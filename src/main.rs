@@ -22,11 +22,11 @@ fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Ve
 
     let eta: f64 = *eta_i / *eta_t;
     let k: f64 = 1.0 + eta * eta * (cosi * cosi - 1.0);
-    return if k < 0.0 {
+    if k < 0.0 {
         math::Vec3::new(1.0, 0.0, 0.0)
     } else {
         *i * eta + *n * (eta * cosi - k.sqrt())
-    };
+    }
 }
 
 /// Intersection of a ray with a sphere
@@ -55,7 +55,7 @@ fn ray_sphere_intersect(
     if t1 > 0.001 {
         return (true, t1);
     }
-    return (false, 0.0);
+    (false, 0.0)
 }
 
 /// A pattern function that returns a color based on the position of a point in space
@@ -89,7 +89,7 @@ fn scene_intersect(
             material.diffuse_color = material.diffuse_color * 0.3;
         }
 
-        d = -(orig.x - 12.0) / dir.x;
+        d = (12.0 - orig.x) / dir.x;
         p = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
@@ -128,7 +128,7 @@ fn scene_intersect(
     }
 
     for sphere in &constants::SPHERES {
-        let (intersection, d): (bool, f64) = ray_sphere_intersect(orig, dir, &sphere);
+        let (intersection, d): (bool, f64) = ray_sphere_intersect(orig, dir, sphere);
         if !intersection || d > nearest_dist {
             continue;
         }
@@ -138,7 +138,7 @@ fn scene_intersect(
         material = sphere.material;
     }
 
-    return (nearest_dist < 1000.0, pt, n, material);
+    (nearest_dist < 1000.0, pt, n, material)
 }
 
 /// Cast a ray into the scene

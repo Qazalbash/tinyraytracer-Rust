@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::math;
 use crate::primitive;
 
@@ -44,7 +46,7 @@ pub(crate) const SPHERES: [primitive::Sphere; 6] = [
     primitive::Sphere::new(math::Vec3::new(-4.0, 3.5, -5.0), 2.0, IVORY),
     primitive::Sphere::new(math::Vec3::new(-4.0, 0.5, -3.0), 1.0, RED_RUBBER),
     primitive::Sphere::new(math::Vec3::new(3.0, 1.5, -4.0), 2.0, MIRROR),
-    primitive::Sphere::new(math::Vec3::new(0.0, 0.0, -50.0), 100.0, MIRROR),
+    primitive::Sphere::new(math::Vec3::new(0.0, 0.0, -50.0), 100.0, STEEL),
 ];
 
 // Lights in the scene

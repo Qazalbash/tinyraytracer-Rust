@@ -40,7 +40,7 @@ The code is divided into 4 files:
 In `main.rs` there is a special function to print patterns on the sides. It is called `pattern`. It is just for fun. By default it is set to:
 
 ```rust
-fn pattern(a: f64, b: f64) -> math::Vec3 {
+fn pattern(a: f32, b: f32) -> math::Vec3 {
     match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
         true => constants::DARK_SQUARE,
         false => constants::LIGHT_SQUARE,

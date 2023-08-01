@@ -8,20 +8,20 @@ mod primitive;
 
 /// Reflect an incident vector i around a normal n
 #[inline]
-fn reflect(i: &math::Vec3, n: &math::Vec3) -> math::Vec3 {
+fn reflect(i: &math::Vec3<f32>, n: &math::Vec3<f32>) -> math::Vec3<f32> {
     *i - *n * 2.0 * (*i * *n)
 }
 
 /// Refract an incident vector i around a normal n
-fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Vec3 {
-    let cosi: f64 = -((*i * *n).clamp(-1.0, 1.0));
+fn refract(i: &math::Vec3<f32>, n: &math::Vec3<f32>, eta_t: &f32, eta_i: &f32) -> math::Vec3<f32> {
+    let cosi: f32 = -((*i * *n).clamp(-1.0, 1.0));
 
     if cosi < 0.0 {
         return refract(i, &-*n, eta_i, eta_t);
     }
 
-    let eta: f64 = *eta_i / *eta_t;
-    let k: f64 = 1.0 + eta * eta * (cosi * cosi - 1.0);
+    let eta: f32 = *eta_i / *eta_t;
+    let k: f32 = 1.0 + eta * eta * (cosi * cosi - 1.0);
     if k < 0.0 {
         math::Vec3::new(1.0, 0.0, 0.0)
     } else {
@@ -31,27 +31,27 @@ fn refract(i: &math::Vec3, n: &math::Vec3, eta_t: &f64, eta_i: &f64) -> math::Ve
 
 /// Intersection of a ray with a sphere
 fn ray_sphere_intersect(
-    orig: &math::Vec3,
-    dir: &math::Vec3,
-    sphere: &primitive::Sphere,
-) -> (bool, f64) {
-    let l: math::Vec3 = sphere.center - *orig;
-    let tca: f64 = l * *dir;
-    let d2: f64 = l * l - tca * tca;
-    let radius_sq: f64 = sphere.radius * sphere.radius;
+    orig: &math::Vec3<f32>,
+    dir: &math::Vec3<f32>,
+    sphere: &primitive::Sphere<f32>,
+) -> (bool, f32) {
+    let l: math::Vec3<f32> = sphere.center - *orig;
+    let tca: f32 = l * *dir;
+    let d2: f32 = l * l - tca * tca;
+    let radius_sq: f32 = sphere.radius * sphere.radius;
 
     if d2 > radius_sq {
         return (false, 0.0);
     }
 
-    let thc: f64 = (radius_sq - d2).sqrt();
+    let thc: f32 = (radius_sq - d2).sqrt();
 
-    let t0: f64 = tca - thc;
+    let t0: f32 = tca - thc;
     if t0 > 0.001 {
         return (true, t0);
     }
 
-    let t1: f64 = tca + thc;
+    let t1: f32 = tca + thc;
     if t1 > 0.001 {
         return (true, t1);
     }
@@ -60,7 +60,7 @@ fn ray_sphere_intersect(
 
 /// A pattern function that returns a color based on the position of a point in space
 #[inline]
-fn pattern(a: f64, b: f64) -> math::Vec3 {
+fn pattern(a: f32, b: f32) -> math::Vec3<f32> {
     match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
         true => constants::DARK_SQUARE,
         false => constants::LIGHT_SQUARE,
@@ -69,17 +69,17 @@ fn pattern(a: f64, b: f64) -> math::Vec3 {
 
 /// Intersection of a ray with the scene
 fn scene_intersect(
-    orig: &math::Vec3,
-    dir: &math::Vec3,
-) -> (bool, math::Vec3, math::Vec3, primitive::Material) {
-    let mut pt: math::Vec3 = math::Vec3::void();
-    let mut n: math::Vec3 = math::Vec3::void();
+    orig: &math::Vec3<f32>,
+    dir: &math::Vec3<f32>,
+) -> (bool, math::Vec3<f32>, math::Vec3<f32>, primitive::Material) {
+    let mut pt: math::Vec3<f32> = math::Vec3::default();
+    let mut n: math::Vec3<f32> = math::Vec3::default();
     let mut material: primitive::Material = primitive::Material::void();
-    let mut nearest_dist: f64 = std::f64::MAX;
+    let mut nearest_dist: f32 = std::f32::MAX;
 
     if dir.x.abs() > 0.001 {
-        let mut d: f64 = -(orig.x + 12.0) / dir.x;
-        let mut p: math::Vec3 = *orig + *dir * d;
+        let mut d: f32 = -(orig.x + 12.0) / dir.x;
+        let mut p: math::Vec3<f32> = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
             nearest_dist = d;
@@ -102,8 +102,8 @@ fn scene_intersect(
     }
 
     if dir.y.abs() > 0.001 {
-        let d: f64 = -(orig.y + 4.0) / dir.y;
-        let p: math::Vec3 = *orig + *dir * d;
+        let d: f32 = -(orig.y + 4.0) / dir.y;
+        let p: math::Vec3<f32> = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && (p.z + 12.0).abs() < 10.0 {
             nearest_dist = d;
@@ -115,8 +115,8 @@ fn scene_intersect(
     }
 
     if dir.z.abs() > 0.001 {
-        let d: f64 = -(orig.z + 22.0) / dir.z;
-        let p: math::Vec3 = *orig + *dir * d;
+        let d: f32 = -(orig.z + 22.0) / dir.z;
+        let p: math::Vec3<f32> = *orig + *dir * d;
 
         if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && p.y.abs() < 4.0 {
             nearest_dist = d;
@@ -128,7 +128,7 @@ fn scene_intersect(
     }
 
     for sphere in &constants::SPHERES {
-        let (intersection, d): (bool, f64) = ray_sphere_intersect(orig, dir, sphere);
+        let (intersection, d): (bool, f32) = ray_sphere_intersect(orig, dir, sphere);
         if !intersection || d > nearest_dist {
             continue;
         }
@@ -142,25 +142,26 @@ fn scene_intersect(
 }
 
 /// Cast a ray into the scene
-fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
-    let (hit, point, n, material): (bool, math::Vec3, math::Vec3, primitive::Material) =
+fn cast_ray(orig: &math::Vec3<f32>, dir: &math::Vec3<f32>, depth: u32) -> math::Vec3<f32> {
+    let (hit, point, n, material): (bool, math::Vec3<f32>, math::Vec3<f32>, primitive::Material) =
         scene_intersect(orig, dir);
     if depth > constants::DEPTH || !hit {
         return constants::BACKGROUND_COLOR;
     }
 
-    let reflect_dir: math::Vec3 = reflect(dir, &n).normalized();
-    let refract_dir: math::Vec3 = refract(dir, &n, &material.refractive_index, &1.0).normalized();
-    let reflect_color: math::Vec3 = cast_ray(&point, &reflect_dir, depth + 1);
-    let refract_color: math::Vec3 = cast_ray(&point, &refract_dir, depth + 1);
+    let reflect_dir: math::Vec3<f32> = reflect(dir, &n).normalized();
+    let refract_dir: math::Vec3<f32> =
+        refract(dir, &n, &material.refractive_index, &1.0).normalized();
+    let reflect_color: math::Vec3<f32> = cast_ray(&point, &reflect_dir, depth + 1);
+    let refract_color: math::Vec3<f32> = cast_ray(&point, &refract_dir, depth + 1);
 
-    let mut diffuse_light_intensity: f64 = 0.0;
-    let mut specular_light_intensity: f64 = 0.0;
+    let mut diffuse_light_intensity: f32 = 0.0;
+    let mut specular_light_intensity: f32 = 0.0;
 
     for light in &constants::LIGHTS {
-        let light_dir: math::Vec3 = (*light - point).normalized();
+        let light_dir: math::Vec3<f32> = (*light - point).normalized();
 
-        let (hit, shadow_pt, _, _): (bool, math::Vec3, math::Vec3, primitive::Material) =
+        let (hit, shadow_pt, _, _): (bool, math::Vec3<f32>, math::Vec3<f32>, primitive::Material) =
             scene_intersect(&point, &light_dir);
 
         if hit && (shadow_pt - point).norm() < (*light - point).norm() {
@@ -183,11 +184,11 @@ fn cast_ray(orig: &math::Vec3, dir: &math::Vec3, depth: u32) -> math::Vec3 {
 fn main() {
     const WIDTH: usize = 1920;
     const HEIGHT: usize = 1080;
-    const FOV: f64 = 1.05;
+    const FOV: f32 = 1.05;
 
-    let mut framebuffer: Vec<math::Vec3> = vec![math::Vec3::void(); WIDTH * HEIGHT];
+    let mut framebuffer: Vec<math::Vec3<f32>> = vec![math::Vec3::default(); WIDTH * HEIGHT];
 
-    let dir_z: f64 = -(HEIGHT as f64) / (2.0 * (FOV / 2.0).tan());
+    let dir_z: f32 = -(HEIGHT as f32) / (2.0 * (FOV / 2.0).tan());
 
     println!("Rendering...");
 
@@ -195,9 +196,9 @@ fn main() {
         .par_iter_mut()
         .enumerate()
         .for_each(|(pix, pixel)| {
-            let dir_x: f64 = ((pix % WIDTH) as f64 + 0.5) - (WIDTH as f64 / 2.0);
-            let dir_y: f64 = -((pix / WIDTH) as f64 + 0.5) + (HEIGHT as f64 / 2.0);
-            let dir: math::Vec3 = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
+            let dir_x: f32 = ((pix % WIDTH) as f32 + 0.5) - (WIDTH as f32 / 2.0);
+            let dir_y: f32 = -((pix / WIDTH) as f32 + 0.5) + (HEIGHT as f32 / 2.0);
+            let dir: math::Vec3<f32> = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
 
             *pixel = cast_ray(&constants::CAMERA_POSITION, &dir, 0);
         });
@@ -208,7 +209,7 @@ fn main() {
     file.write_all(format!("P6\n{} {}\n255\n", WIDTH, HEIGHT).as_bytes())
         .unwrap();
     for color in &framebuffer {
-        let scale = 255.0 / 1.0_f64.max(color.x.max(color.y.max(color.z)));
+        let scale = 255.0 / 1.0_f32.max(color.x.max(color.y.max(color.z)));
         for channel in &[color.x, color.y, color.z] {
             file.write_all(&[(channel * scale) as u8]).unwrap();
         }

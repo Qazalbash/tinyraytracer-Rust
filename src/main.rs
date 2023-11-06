@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 use std::fs::File;
-use std::io::{BufWriter, Write}; // For parallelization
+use std::io::{BufWriter, Write};
 
 mod constants;
 mod math;
@@ -55,6 +55,7 @@ fn ray_sphere_intersect(
     if t1 > 0.001 {
         return (true, t1);
     }
+
     (false, 0.0)
 }
 
@@ -77,30 +78,6 @@ fn scene_intersect(
     let mut material: primitive::Material = primitive::Material::void();
     let mut nearest_dist: f32 = std::f32::MAX;
 
-    if dir.x.abs() > 0.001 {
-        let mut d: f32 = -(orig.x + 12.0) / dir.x;
-        let mut p: math::Vec3<f32> = *orig + *dir * d;
-
-        if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
-            nearest_dist = d;
-            pt = p;
-            n = math::Vec3::new(1.0, 0.0, 0.0);
-            material.diffuse_color = pattern(pt.y, pt.z);
-            material.diffuse_color = material.diffuse_color * 0.3;
-        }
-
-        d = (12.0 - orig.x) / dir.x;
-        p = *orig + *dir * d;
-
-        if d > 0.001 && d < nearest_dist && (p.z + 12.0).abs() < 10.0 && p.y.abs() < 4.0 {
-            nearest_dist = d;
-            pt = p;
-            n = math::Vec3::new(-1.0, 0.0, 0.0);
-            material.diffuse_color = pattern(pt.y, pt.z);
-            material.diffuse_color = material.diffuse_color * 0.3;
-        }
-    }
-
     if dir.y.abs() > 0.001 {
         let d: f32 = -(orig.y + 4.0) / dir.y;
         let p: math::Vec3<f32> = *orig + *dir * d;
@@ -109,21 +86,7 @@ fn scene_intersect(
             nearest_dist = d;
             pt = p;
             n = math::Vec3::new(0.0, 1.0, 0.0);
-            material.diffuse_color = pattern(pt.x, pt.z);
-            material.diffuse_color = material.diffuse_color * 0.3;
-        }
-    }
-
-    if dir.z.abs() > 0.001 {
-        let d: f32 = -(orig.z + 22.0) / dir.z;
-        let p: math::Vec3<f32> = *orig + *dir * d;
-
-        if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && p.y.abs() < 4.0 {
-            nearest_dist = d;
-            pt = p;
-            n = math::Vec3::new(0.0, 0.0, 1.0);
-            material.diffuse_color = pattern(pt.y, pt.x);
-            material.diffuse_color = material.diffuse_color * 0.3;
+            material.diffuse_color = pattern(pt.x, pt.z) * 0.3;
         }
     }
 
@@ -175,7 +138,11 @@ fn cast_ray(orig: &math::Vec3<f32>, dir: &math::Vec3<f32>, depth: u32) -> math::
     }
 
     (material.diffuse_color * diffuse_light_intensity * material.albedo[0])
-        + (math::Vec3::new(1.0, 1.0, 1.0) * specular_light_intensity * material.albedo[1])
+        + (math::Vec3::new(
+            specular_light_intensity,
+            specular_light_intensity,
+            specular_light_intensity,
+        ) * material.albedo[1])
         + (reflect_color * material.albedo[2])
         + (refract_color * material.albedo[3])
 }
@@ -205,7 +172,7 @@ fn main() {
 
     println!("Writing to file...");
 
-    let mut file = BufWriter::new(File::create("out.ppm").unwrap());
+    let mut file: BufWriter<File> = BufWriter::new(File::create("out.ppm").unwrap());
     file.write_all(format!("P6\n{} {}\n255\n", WIDTH, HEIGHT).as_bytes())
         .unwrap();
     for color in &framebuffer {

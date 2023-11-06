@@ -40,7 +40,7 @@ const STEEL: primitive::Material = primitive::Material::new(
 );
 
 // Spheres in the scene
-pub(crate) const SPHERES: [primitive::Sphere<f32>; 5] = [
+pub const SPHERES: [primitive::Sphere<f32>; 5] = [
     primitive::Sphere::new(math::Vec3::new(-1.0, 0.0, -3.0), 2.0, GLASS),
     primitive::Sphere::new(math::Vec3::new(0.0, 1.5, -9.0), 3.0, STEEL),
     primitive::Sphere::new(math::Vec3::new(-4.0, 3.5, -5.0), 2.0, IVORY),
@@ -49,7 +49,7 @@ pub(crate) const SPHERES: [primitive::Sphere<f32>; 5] = [
 ];
 
 // Lights in the scene
-pub(crate) const LIGHTS: [math::Vec3<f32>; 4] = [
+pub const LIGHTS: [math::Vec3<f32>; 4] = [
     math::Vec3::new(-20.0, 20.0, 20.0),
     math::Vec3::new(30.0, 50.0, -25.0),
     math::Vec3::new(30.0, 20.0, 30.0),
@@ -75,9 +75,9 @@ const PALE_GREEN: math::Vec3<f32> = math::Vec3::new(0.63, 0.80, 0.63);
 const PURPLE_BLUE: math::Vec3<f32> = math::Vec3::new(0.5, 0.3, 1.0);
 const PINK: math::Vec3<f32> = math::Vec3::new(1.0, 0.0, 0.5);
 
-pub(crate) const BACKGROUND_COLOR: math::Vec3<f32> = PURPLE_BLUE;
-pub(crate) const LIGHT_SQUARE: math::Vec3<f32> = PURE_YELLOW;
-pub(crate) const DARK_SQUARE: math::Vec3<f32> = PINK;
+pub const BACKGROUND_COLOR: math::Vec3<f32> = GREY;
+pub const LIGHT_SQUARE: math::Vec3<f32> = ORANGE;
+pub const DARK_SQUARE: math::Vec3<f32> = WHITE;
 
-pub(crate) const CAMERA_POSITION: math::Vec3<f32> = math::Vec3::new(0.0, 0.0, 10.0);
-pub(crate) const DEPTH: u32 = 5;
+pub const CAMERA_POSITION: math::Vec3<f32> = math::Vec3::new(0.0, 0.0, 10.0);
+pub const DEPTH: u32 = 10;

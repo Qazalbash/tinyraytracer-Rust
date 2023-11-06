@@ -2,7 +2,7 @@ use num_traits::Float;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, Default)]
-pub(crate) struct Vec3<T>
+pub struct Vec3<T>
 where
     T: Float
         + Copy
@@ -13,9 +13,9 @@ where
         + Div<Output = T>
         + Neg<Output = T>,
 {
-    pub(crate) x: T,
-    pub(crate) y: T,
-    pub(crate) z: T,
+    pub x: T,
+    pub y: T,
+    pub z: T,
 }
 
 impl<T> Add for Vec3<T>
@@ -199,15 +199,15 @@ where
         + Div<Output = T>
         + Neg<Output = T>,
 {
-    pub(crate) const fn new(x: T, y: T, z: T) -> Self {
+    pub const fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
     }
 
-    pub(crate) fn norm(&self) -> T {
+    pub fn norm(&self) -> T {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub(crate) fn normalized(&self) -> Self {
+    pub fn normalized(&self) -> Self {
         let length = self.norm();
         Self {
             x: self.x / length,

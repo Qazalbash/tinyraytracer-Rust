@@ -25,21 +25,22 @@ Otherwise, you can compile it manually using `rustc` and run the executable `tin
 ```bash
 git clone https://github.com/Qazalbash/tinyraytracer-Rust.git
 cd tinyraytracer-Rust
-rustc -C opt-level=3 -C target-cpu=native -C lto -C codegen-units=1 -C panic=abort -C debuginfo=0 -C metadata=8e0d7b5e2e2b3b3e --out-dir ./target --crate-name tinyraytracer src/main.rs
+rustc -C opt-level=3 -C target-cpu=native -C lto -C codegen-units=1 -C panic=abort -C debuginfo=0 --out-dir ./target --crate-name tinyraytracer src/main.rs
 ```
 
 ## Description
 
 The code is divided into 4 files:
 
-- `constants.rs`: It contains the constants used in the code.
-- `main.rs`: It contains the main function and the code for rendering the scene.
-- `math.rs`: It contains the code for vectors.
-- `primitive.rs`: It contains the code for primitives types like `Sphere` and `Material`.
+- [`constants.rs`](src/constants.rs): It contains the constants used in the code.
+- [`main.rs`](src/main.rs): It contains the main function and the code for rendering the scene.
+- [`math.rs`](src/math.rs): It contains the code for vectors.
+- [`primitive.rs`](src/primitive.rs): It contains the code for primitives types like `Sphere` and `Material`.
 
-In `main.rs` there is a special function to print patterns on the sides. It is called `pattern`. It is just for fun. By default it is set to:
+In [`main.rs`](src/main.rs) there is a special function to print patterns on the sides. It is called `pattern`. It is just for fun. By default it is set to:
 
 ```rust
+#[inline]
 fn pattern(a: f32, b: f32) -> math::Vec3 {
     match ((a + 1000.0) as i32 + b as i32) & 1 == 1 {
         true => constants::DARK_SQUARE,

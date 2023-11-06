@@ -3,15 +3,15 @@ use num_traits::Float;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Copy, Clone, Debug, Default)]
-pub(crate) struct Material {
-    pub(crate) refractive_index: f32,
-    pub(crate) albedo: [f32; 4],
-    pub(crate) diffuse_color: math::Vec3<f32>,
-    pub(crate) specular_exponent: f32,
+pub struct Material {
+    pub refractive_index: f32,
+    pub albedo: [f32; 4],
+    pub diffuse_color: math::Vec3<f32>,
+    pub specular_exponent: f32,
 }
 
 impl Material {
-    pub(crate) const fn new(
+    pub const fn new(
         refractive_index: f32,
         albedo: [f32; 4],
         diffuse_color: math::Vec3<f32>,
@@ -25,7 +25,7 @@ impl Material {
         }
     }
 
-    pub(crate) fn void() -> Self {
+    pub fn void() -> Self {
         Self {
             refractive_index: 1.0,
             albedo: [2.0, 0.0, 0.0, 0.0],
@@ -36,7 +36,7 @@ impl Material {
 }
 
 #[derive(Clone, Debug, Default)]
-pub(crate) struct Sphere<T>
+pub struct Sphere<T>
 where
     T: Copy
         + Float
@@ -47,9 +47,9 @@ where
         + Div<Output = T>
         + Neg<Output = T>,
 {
-    pub(crate) center: math::Vec3<T>,
-    pub(crate) radius: T,
-    pub(crate) material: Material,
+    pub center: math::Vec3<T>,
+    pub radius: T,
+    pub material: Material,
 }
 
 impl<T> Sphere<T>
@@ -63,7 +63,7 @@ where
         + Div<Output = T>
         + Neg<Output = T>,
 {
-    pub(crate) const fn new(center: math::Vec3<T>, radius: T, material: Material) -> Self {
+    pub const fn new(center: math::Vec3<T>, radius: T, material: Material) -> Self {
         Self {
             center,
             radius,

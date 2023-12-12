@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use rayon::prelude::*;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -10,6 +11,33 @@ mod primitive;
 #[inline]
 fn reflect(i: &math::Vec3<f32>, n: &math::Vec3<f32>) -> math::Vec3<f32> {
     *i - *n * 2.0 * (*i * *n)
+}
+
+#[inline]
+fn rotate_at_axis_x(v: &math::Vec3<f32>, angle: f32) -> math::Vec3<f32> {
+    let angle_in_radians: f32 = angle * std::f32::consts::PI / 180.0;
+    let sine: f32 = f32::sin(angle_in_radians);
+    let cosine: f32 = f32::cos(angle_in_radians);
+
+    math::Vec3::new(v.x, v.y * cosine - v.z * sine, v.y * sine + v.z * cosine)
+}
+
+#[inline]
+fn rotate_at_axis_y(v: &math::Vec3<f32>, angle: f32) -> math::Vec3<f32> {
+    let angle_in_radians: f32 = angle * std::f32::consts::PI / 180.0;
+    let sine: f32 = f32::sin(angle_in_radians);
+    let cosine: f32 = f32::cos(angle_in_radians);
+
+    math::Vec3::new(v.x * cosine - v.z * sine, v.y, v.x * sine + v.z * cosine)
+}
+
+#[inline]
+fn rotate_at_axis_z(v: &math::Vec3<f32>, angle: f32) -> math::Vec3<f32> {
+    let angle_in_radians: f32 = angle * std::f32::consts::PI / 180.0;
+    let sine: f32 = f32::sin(angle_in_radians);
+    let cosine: f32 = f32::cos(angle_in_radians);
+
+    math::Vec3::new(v.x * cosine - v.y * sine, v.x * sine + v.y * cosine, v.z)
 }
 
 /// Refract an incident vector i around a normal n
@@ -82,10 +110,10 @@ fn scene_intersect(
         let d: f32 = -(orig.y + 4.0) / dir.y;
         let p: math::Vec3<f32> = *orig + *dir * d;
 
-        if d > 0.001 && d < nearest_dist && p.x.abs() < 12.0 && (p.z + 12.0).abs() < 10.0 {
+        if d > 0.0001 && d < nearest_dist && p.x.abs() < 10.0 && (p.z + 10.0).abs() < 8.0 {
             nearest_dist = d;
             pt = p;
-            n = math::Vec3::new(0.0, 1.0, 0.0);
+            n = math::Vec3::new(0.0, 1.0, 0.0).normalized();
             material.diffuse_color = pattern(pt.x, pt.z) * 0.3;
         }
     }
@@ -165,7 +193,14 @@ fn main() {
         .for_each(|(pix, pixel)| {
             let dir_x: f32 = ((pix % WIDTH) as f32 + 0.5) - (WIDTH as f32 / 2.0);
             let dir_y: f32 = -((pix / WIDTH) as f32 + 0.5) + (HEIGHT as f32 / 2.0);
-            let dir: math::Vec3<f32> = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
+            // let dir: math::Vec3<f32> = math::Vec3::new(dir_x, dir_y, dir_z).normalized();
+
+            let mut dir: math::Vec3<f32> = math::Vec3::new(dir_x, dir_y, dir_z);
+
+            dir = rotate_at_axis_x(&dir, -45.0);
+            dir = rotate_at_axis_y(&dir, -45.0);
+            // dir = rotate_at_axis_z(&dir, 15.0);
+            dir = dir.normalized();
 
             *pixel = cast_ray(&constants::CAMERA_POSITION, &dir, 0);
         });
